@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat with the Bot</title>
+  </head>
+  <body>
+    <h1>Chat with the Bot</h1>
+    <div id="chat-container">
+      <div id="chat-box">
+        <!-- Chat messages will be displayed here -->
+      </div>
+      <form id="chat-form">
+        <input type="text" id="user-input" placeholder="Type your message..." />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+
+    <script>
+      const chatBox = document.getElementById("chat-box");
+      const chatForm = document.getElementById("chat-form");
+      const userInput = document.getElementById("user-input");
+
+      // Function to send user message to Flask backend
+      async function sendMessage(message) {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: `msg=${encodeURIComponent(message)}`,
+        });
+        return await response.json();
+      }
+
+      // Function to append message to chat box
+      function appendMessage(role, content) {
+        const message = document.createElement("div");
+        message.classList.add(role);
+        message.textContent = content;
+        chatBox.appendChild(message);
+        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+      }
+
+      // Event listener for form submission
+      chatForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const userMessage = userInput.value.trim();
+        if (userMessage !== "") {
+          appendMessage("user", userMessage);
+          userInput.value = "";
+          const botResponse = await sendMessage(userMessage);
+          appendMessage("bot", botResponse.content);
+        }
+      });
+    </script>
+  </body>
+</html>
